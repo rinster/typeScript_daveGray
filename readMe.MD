@@ -83,3 +83,213 @@ export const Section = ({children, title = "My Subheading"}: SectionProps) => {
     )
 }
 ```
+---
+
+#### App.tsx
+```
+import Heading from "./components/Heading"
+import Counter from "./components/Counter"
+import List from "./components/List"
+import { Section } from "./components/Section"
+
+import { useState } from "react"
+
+function App() {
+  const [count, setCount] = useState<number>(1)
+
+  return  (
+    <>
+      <Heading title={"Hello"} />
+      <Section title="Different Title">This is my section</Section>
+      <Counter setCount={setCount}>Count A is {count} </Counter>
+      <List items={["🍵 Coffee", "🌮 Tacos", "  💻  Code"]} render={(item: string) => <span className="bold">{item}</span>}/>
+    </>
+ 
+    )
+}
+
+export default App
+
+```
+
+### Heading.tsx
+```
+import { ReactElement } from "react"
+
+type HeadingProps = {title : string}
+
+const Heading = ( {title}: HeadingProps) : ReactElement => {
+  return <h1> {title}</h1>
+}
+
+export default Heading
+```
+### Section.tsx
+
+```
+import{ ReactNode } from "react";
+
+
+type SectionProps = {
+    title?: string, // ? indicates optional, so you can provide a default subheading i.e." My Subheading"
+    children: ReactNode
+}
+
+export const Section = ({children, title = "My Subheading"}: SectionProps) => {
+    return (
+        <section>
+            <h2>{title}</h2>
+            <p>{children}</p>
+        </section>
+    )
+}
+```
+
+#### Counter.tsx
+```
+import { ReactNode } from "react"
+
+type CounterProps = {
+    setCount: React.Dispatch<React.SetStateAction<number>>,
+    children: ReactNode
+}
+
+const Counter = ({setCount, children}: CounterProps) => {
+  return (
+    <>
+    <h1> Count is {children}</h1>
+    <button onClick={()=> setCount(prev => prev + 1)}>+</button>
+    <button onClick={() => setCount(prev => prev - 1)}>-</button>
+
+    </>
+  )
+}
+
+
+export default Counter
+```
+
+#### List.tsx
+```
+import { ReactNode } from "react";
+
+interface  ListProps<T> { // 'T' indicates a generic
+    items: T[],
+    render: (item: T) => ReactNode
+}
+
+// Both of these work
+// const List = <T,>
+// OR
+//const List = <T extends {}>
+const List = <T,>({items, render}: ListProps<T>) => {
+  return (
+    <ul>
+        {items.map((item, i) =>(
+            <li key={i}>
+                 {render(item)}
+            </li>
+        ))}
+    </ul>
+  )
+}
+
+export default List
+
+
+```
+
+---
+### Generics
+In TypeScript, generics allow you to create reusable components and functions that can work with different types without sacrificing type safety. They provide a way to define placeholders for types that are determined when the component or function is used.
+
+Here are a few examples of how generics can be used in TypeScript:
+
+1. **Generic Functions:**
+   ```typescript
+   function identity<T>(arg: T): T {
+     return arg;
+   }
+
+   // Usage
+   let result = identity<string>("Hello");
+   console.log(result); // Output: Hello
+
+   let numberResult = identity<number>(42);
+   console.log(numberResult); // Output: 42
+   ```
+
+   In the `identity` function above, `T` is a generic type parameter. It acts as a placeholder for the type of the argument and the return value. When the function is called, the type of `arg` and the return type will be inferred based on the argument passed.
+
+2. **Generic Classes:**
+   ```typescript
+   class Queue<T> {
+     private items: T[] = [];
+
+     enqueue(item: T): void {
+       this.items.push(item);
+     }
+
+     dequeue(): T | undefined {
+       return this.items.shift();
+     }
+   }
+
+   // Usage
+   const numberQueue = new Queue<number>();
+   numberQueue.enqueue(1);
+   numberQueue.enqueue(2);
+   console.log(numberQueue.dequeue()); // Output: 1
+
+   const stringQueue = new Queue<string>();
+   stringQueue.enqueue("Hello");
+   stringQueue.enqueue("World");
+   console.log(stringQueue.dequeue()); // Output: Hello
+   ```
+
+   The `Queue` class above is a generic class that can hold items of any type. The type parameter `T` is used to define the type of the items in the queue.
+
+3. **Generic Interfaces:**
+   ```typescript
+   interface Pair<T, U> {
+     first: T;
+     second: U;
+   }
+
+   // Usage
+   const pair: Pair<number, string> = {
+     first: 42,
+     second: "Hello",
+   };
+
+   console.log(pair.first); // Output: 42
+   console.log(pair.second); // Output: Hello
+   ```
+
+   The `Pair` interface represents a pair of values, where the first value has type `T` and the second value has type `U`. When using the interface, you can specify the specific types for `T` and `U`.
+
+These are just a few examples of how generics can be used in TypeScript. They provide flexibility and type safety, allowing you to create reusable and type-aware components and functions.
+
+The two generic syntaxes you provided, `const List = <T,>` and `const List = <T extends {}>`, are examples of generic type parameters in TypeScript. Let's break down each syntax and explain why they work:
+
+1. `const List = <T,>`
+   In this syntax, `<T>` represents a generic type parameter without any constraints or bounds. It means that `T` can be any type.
+
+   Example usage:
+   ```typescript
+   const myList: List<number> = [1, 2, 3];
+   ```
+
+   This syntax allows you to create a generic type `List` and specify the type when using it. The type parameter `T` is flexible and can be replaced with any type when using `List`.
+
+2. `const List = <T extends {}>`
+   In this syntax, `<T extends {}>` represents a generic type parameter with a constraint or bound. It means that `T` must be a type that extends or implements `{}`, which is an empty object type.
+
+   Example usage:
+   ```typescript
+   const myObjectList: List<{ name: string }> = [{ name: "Alice" }, { name: "Bob" }];
+   ```
+
+   This syntax allows you to create a generic type `List` but restricts the type parameter `T` to be an object type (or a type that extends an object type). The constraint `{}` ensures that `T` must be assignable to an empty object, so it can include properties and methods.
+
+By using generic type parameters, you create reusable components or functions that can work with different types while maintaining type safety. The syntax `<T>` defines the generic type parameter, and additional constraints can be added using the `extends` keyword followed by the desired constraint.
